@@ -1,16 +1,26 @@
-# This is a sample Python script.
+import multiprocessing
+import time
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+from random import randint
+from selenium import webdriver
+from selenium.webdriver.support.ui import Select
 
 
-# Press the green button in the gutter to run the script.
+class Auto_trading_bot:
+    def __init__(self):
+        # chrome 86 driver, you might have to install a different file here
+        self.bot = webdriver.Chrome(executable_path='./chromedriver')
+
+    def get_tables(self):
+        bot = self.bot
+        bot.get('https://finance.yahoo.com/most-active')  # reaching the site
+        buttons = bot.find_elements_by_tag_name('button')  # getting all the buttons
+        for button in buttons:
+            if button.get_attribute('value') == 'agree':
+                button.click()  # clicking the consent button
+                break  # breaking the loop (or the if, I am not sure)
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    bot1 = Auto_trading_bot()
+    bot2 = Auto_trading_bot()
