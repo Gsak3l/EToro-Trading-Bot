@@ -42,12 +42,24 @@ class Auto_trading_bot:
             local_stock_per_change.append(row.find_elements_by_tag_name('td')[4].text)
             # once again for the total volume
             local_stock_volume.append(row.find_elements_by_tag_name('td')[5].text)
+        bot.close()  # shuts down the bot
+
+    def buy_stocks(self, email, password):
+        bot = self.bot
+        bot.get('https://www.etoro.com/login')  # accessing the etoro website
+        form = bot.find_element_by_tag_name('form')  # finding the form
+        inputs = form.find_elements_by_tag_name('input')  # getting all the inputs available in the form
+        inputs[0].send_keys(email)  # typing the email address
+        inputs[1].send_keys(password)  # typing the password
+        inputs[2].click()  # unchecking the stay signed in button
 
 
 if __name__ == '__main__':
     bot1 = Auto_trading_bot()
+    bot2 = Auto_trading_bot()
     process1 = multiprocessing.Process(target=bot1.get_tables, args=(stock_names, stock_per_change, stock_volume))
+    process2 = multiprocessing.Process(target=bot2.buy_stocks, args=("email address goes here", "password goes here"))
     process1.start()
+    process2.start()
     process1.join()
-    for i in range(25):
-        print(str(stock_names[i]) + ' ' + str(stock_per_change[i]) + ' ' + str(stock_volume[i]))
+    process2.join()
