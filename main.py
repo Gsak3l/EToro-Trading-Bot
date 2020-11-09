@@ -1,9 +1,9 @@
 import multiprocessing
 import time
 
-from random import randint
 from selenium import webdriver
-from selenium.webdriver.support.ui import Select
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.keys import Keys
 
 manager = multiprocessing.Manager()
 stock_names = manager.list()
@@ -14,7 +14,11 @@ stock_volume = manager.list()
 class Auto_trading_bot:
     def __init__(self):
         # chrome 86 driver, you might have to install a different file here
-        self.bot = webdriver.Chrome(executable_path='./chromedriver')
+        opts = Options()
+        # changing user-agent because etoro detects the automated browser somehow
+        opts.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) "
+                          "Chrome/86.0.4240.183 Safari/537.36")
+        self.bot = webdriver.Chrome(executable_path='./chromedriver', options=opts)
 
     def get_tables(self, local_stock_names, local_stock_per_change, local_stock_volume):
         bot = self.bot
@@ -49,9 +53,12 @@ class Auto_trading_bot:
         bot.get('https://www.etoro.com/login')  # accessing the etoro website
         form = bot.find_element_by_tag_name('form')  # finding the form
         inputs = form.find_elements_by_tag_name('input')  # getting all the inputs available in the form
-        inputs[0].send_keys(email)  # typing the email address
-        inputs[1].send_keys(password)  # typing the password
-        inputs[2].click()  # unchecking the stay signed in button
+        # filling the form with the email and password
+        inputs[0].send_keys(email)
+        inputs[1].send_keys(password)
+        # sleeping for a while before clicking the sign in button
+        time.sleep(30)
+        bot.find_element_by_xpath('//button[@automation-id="login-sts-btn-sign-in"]').click()
 
 
 if __name__ == '__main__':
