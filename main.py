@@ -3,12 +3,10 @@ import time
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.keys import Keys
 
 manager = multiprocessing.Manager()
-stock_names = manager.list()
-stock_per_change = manager.list()
-stock_volume = manager.list()
+stock_info = manager.list()
+flags = manager.list()
 
 
 class Auto_trading_bot:
@@ -20,7 +18,7 @@ class Auto_trading_bot:
                           "Chrome/86.0.4240.183 Safari/537.36")
         self.bot = webdriver.Chrome(executable_path='./chromedriver', options=opts)
 
-    def get_tables(self, local_stock_names, local_stock_per_change, local_stock_volume):
+    def get_stock_info(self, local_stock_info):
         bot = self.bot
         bot.get('https://finance.yahoo.com/most-active')  # reaching the site
         buttons = bot.find_elements_by_tag_name('button')  # getting all the buttons
@@ -40,12 +38,16 @@ class Auto_trading_bot:
         rows = table.find_elements_by_tag_name('tr')
         for row in rows:
             # getting the first column for each row, the name of the stock
-            # and appending the global list with these names
-            local_stock_names.append(row.find_elements_by_tag_name('td')[0].text)
-            # doing the same for the % change
-            local_stock_per_change.append(row.find_elements_by_tag_name('td')[4].text)
-            # once again for the total volume
-            local_stock_volume.append(row.find_elements_by_tag_name('td')[5].text)
+            stock_names = row.find_elements_by_tag_name('td')[0].text  # stock names
+            stock_per_change = row.find_elements_by_tag_name('td')[4].text  # stock percentage change
+            stock_volume = row.find_elements_by_tag_name('td')[5].text  # stock total volume
+            stock_per_change = stock_per_change.split('+', 1)[1]  # getting the numbers and not the %
+            stock_per_change = stock_per_change.split('.', 1)[0]  # getting the numbers and not the %
+            stock_volume = stock_volume.split('.', 1)[0]  # getting only the millions and not the thousands
+            stock_per_change = int(stock_per_change)  # converting to integer
+            stock_volume = int(stock_volume)  # converting to int
+            local_stock_info.append([stock_names, stock_per_change, stock_volume])
+        flags.append(True)
         bot.close()  # shuts down the bot
 
     def buy_stocks(self, email, password):
@@ -57,15 +59,34 @@ class Auto_trading_bot:
         inputs[0].send_keys(email)
         inputs[1].send_keys(password)
         # sleeping for a while before clicking the sign in button
-        time.sleep(30)
+        time.sleep(5)
+        # clicking the sign in button
         bot.find_element_by_xpath('//button[@automation-id="login-sts-btn-sign-in"]').click()
+        time.sleep(30)  # you are supposed to somehow change your ip now
+        # clicking the sign in button again
+        bot.find_element_by_xpath('//button[@automation-id="login-sts-btn-sign-in"]').click()
+        bot.close()  # shuts down the bot
+
+    def calculate_what_to_buy(self, amount_of_money):
+        bot = self.bot
+        # waiting to retrieve the data from the get_stocks_info function
+        while len(flags) == 0:
+            continue
+        for i in stock_info:
+            print(i)
+        print('-------------------------------------------------------')
+        stock_info_2 = sorted(stock_info, key=lambda x: x[2])
+        for i in stock_info_2:
+            print(i)
 
 
 if __name__ == '__main__':
     bot1 = Auto_trading_bot()
     bot2 = Auto_trading_bot()
-    process1 = multiprocessing.Process(target=bot1.get_tables, args=(stock_names, stock_per_change, stock_volume))
-    process2 = multiprocessing.Process(target=bot2.buy_stocks, args=("email address goes here", "password goes here"))
+    bot3 = Auto_trading_bot()
+    process1 = multiprocessing.Process(target=bot1.get_stock_info, args=(stock_info,))
+    process2 = multiprocessing.Process(target=bot2.calculate_what_to_buy, args=(1500,))
+    process3 = multiprocessing.Process(target=bot2.buy_stocks, args=("email address goes here", "password goes here"))
     process1.start()
     process2.start()
     process1.join()
