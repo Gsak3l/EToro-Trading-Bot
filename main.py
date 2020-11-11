@@ -6,9 +6,11 @@ from selenium.webdriver.chrome.options import Options
 
 manager = multiprocessing.Manager()
 stock_info = manager.list()
+stocks_to_buy = manager.list()
 flags = manager.list()
 
 
+# noinspection PyBroadException
 class Auto_trading_bot:
     def __init__(self):
         # chrome 86 driver, you might have to install a different file here
@@ -41,12 +43,18 @@ class Auto_trading_bot:
             stock_names = row.find_elements_by_tag_name('td')[0].text  # stock names
             stock_per_change = row.find_elements_by_tag_name('td')[4].text  # stock percentage change
             stock_volume = row.find_elements_by_tag_name('td')[5].text  # stock total volume
-            stock_per_change = stock_per_change.split('+', 1)[1]  # getting the numbers and not the %
-            stock_per_change = stock_per_change.split('.', 1)[0]  # getting the numbers and not the %
+            try:
+                stock_per_change = stock_per_change.split('+', 1)[1]  # getting the numbers and not the +
+            except:
+                stock_per_change = "-10.1"  # we don't need negative values
+            stock_per_change = stock_per_change.split('.', 1)[0]  # not getting decimal
             stock_volume = stock_volume.split('.', 1)[0]  # getting only the millions and not the thousands
             stock_per_change = int(stock_per_change)  # converting to integer
             stock_volume = int(stock_volume)  # converting to int
-            local_stock_info.append([stock_names, stock_per_change, stock_volume])
+            # calculating the buying value
+            buying_value = (3 * stock_per_change + 2 * stock_volume) % 5
+            # appending the array's row
+            local_stock_info.append([stock_names, stock_per_change, stock_volume, buying_value])
         flags.append(True)
         bot.close()  # shuts down the bot
 
@@ -65,17 +73,17 @@ class Auto_trading_bot:
         time.sleep(30)  # you are supposed to somehow change your ip now
         # clicking the sign in button again
         bot.find_element_by_xpath('//button[@automation-id="login-sts-btn-sign-in"]').click()
+        # waiting to get the calculated values from calculate_what_to_buy
+        while len(flags) != 2:
+            continue
         bot.close()  # shuts down the bot
 
-    def calculate_what_to_buy(self, amount_of_money):
+    def calculate_what_to_buy(self, local_stocks_to_buy, amount_of_money):
         bot = self.bot
         # waiting to retrieve the data from the get_stocks_info function
         while len(flags) == 0:
             continue
-        for i in stock_info:
-            print(i)
-        print('-------------------------------------------------------')
-        stock_info_2 = sorted(stock_info, key=lambda x: x[2])
+        stock_info_2 = sorted(stock_info, key=lambda x: x[3])
         for i in stock_info_2:
             print(i)
 
@@ -85,7 +93,7 @@ if __name__ == '__main__':
     bot2 = Auto_trading_bot()
     bot3 = Auto_trading_bot()
     process1 = multiprocessing.Process(target=bot1.get_stock_info, args=(stock_info,))
-    process2 = multiprocessing.Process(target=bot2.calculate_what_to_buy, args=(1500,))
+    process2 = multiprocessing.Process(target=bot2.calculate_what_to_buy, args=(stocks_to_buy, 1500))
     process3 = multiprocessing.Process(target=bot2.buy_stocks, args=("email address goes here", "password goes here"))
     process1.start()
     process2.start()
