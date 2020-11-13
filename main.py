@@ -33,6 +33,7 @@ def calculate_what_to_buy(local_stocks_to_buy, amount_of_money):
             money_step = money_step - 1  # decreasing the value of the step
     for i in local_stocks_to_buy:
         print(i)
+    flags.append(True)
 
 
 class Auto_trading_bot:
@@ -94,13 +95,33 @@ class Auto_trading_bot:
         time.sleep(5)
         # clicking the sign in button
         bot.find_element_by_xpath('//button[@automation-id="login-sts-btn-sign-in"]').click()
-        time.sleep(30)  # you are supposed to somehow change your ip now
+        # waiting 30 seconds after we get all the data
+        while len(flags) != 1:
+            continue
+        time.sleep(20)  # you are supposed to somehow change your ip now
         # clicking the sign in button again
         bot.find_element_by_xpath('//button[@automation-id="login-sts-btn-sign-in"]').click()
         # waiting to get the calculated values from calculate_what_to_buy
         while len(flags) != 2:
             continue
-        bot.close()  # shuts down the bot
+        # waiting for the page to load
+        time.sleep(5)
+        # locating the virtual portfolio button, change this if you want to invest in your actual portfolio
+        # !!! not recommended, I don't know anything about stocks !!!
+        bot.find_element_by_tag_name('et-select').click()  # clicking the "REAL" portfolio button to switch to virtual
+        # wait half a second
+        time.sleep(0.5)
+        # finding all the options from the menu
+        options = bot.find_elements_by_tag_name('et-select-body-option')
+        for option in options:
+            # clicking the virtual portfolio option
+            if option.find_element_by_tag_name('span').text == 'Virtual Portfolio':
+                option.click()
+        time.sleep(2)
+        # clicking the final warning button
+        bot.find_element_by_xpath(
+            '/html/body/div[5]/div[2]/div/et-dialog-container/et-portfolio-toggle-account/div/div[3]/a').click()
+        # bot.close()  # shuts down the bot
 
 
 if __name__ == '__main__':
@@ -111,5 +132,7 @@ if __name__ == '__main__':
     process3 = multiprocessing.Process(target=bot2.buy_stocks, args=("email address goes here", "password goes here"))
     process1.start()
     process2.start()
+    process3.start()
     process1.join()
     process2.join()
+    process3.join()
