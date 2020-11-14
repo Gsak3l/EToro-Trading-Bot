@@ -36,6 +36,7 @@ def calculate_what_to_buy(local_stocks_to_buy, amount_of_money):
     flags.append(True)
 
 
+# noinspection PyBroadException
 class Auto_trading_bot:
     def __init__(self):
         # chrome 86 driver, you might have to install a different file here
@@ -124,9 +125,20 @@ class Auto_trading_bot:
         for stock in stocks_to_buy:  # looping to buy each stock from the stocks_to_buy list
             bot.find_element_by_tag_name('input').send_keys(stock[0])  # searching for the stock
             time.sleep(1)  # waiting for the results to appear
-            print(bot.find_element_by_class_name('trading-autocomplete-wrapper'). \
-                  find_element_by_class_name('search-result-name-full').text)
-
+            bot.find_element_by_class_name('trading-autocomplete-wrapper').find_element_by_class_name(
+                'search-result-name-full').click()  # clicking the right stock from the stocks section
+            time.sleep(2)
+            # finding the trade button
+            try:
+                bot.find_element_by_tag_name('trade-button').click()  # clicking the trade button
+                bot.find_element_by_tag_name('input').send_keys(stock[1])  # typing the amount of money
+                buttons = bot.find_elements_by_tag_name('button')  # finding all the buttons
+                for button in buttons:
+                    if button.text == 'Set Order                        ':
+                        button.click()  # clicking the right button
+            except:
+                pass
+            time.sleep(2)
         # bot.close()  # shuts down the bot
 
 
