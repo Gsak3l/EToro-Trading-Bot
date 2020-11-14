@@ -121,6 +121,12 @@ class Auto_trading_bot:
         # clicking the final warning button
         bot.find_element_by_xpath(
             '/html/body/div[5]/div[2]/div/et-dialog-container/et-portfolio-toggle-account/div/div[3]/a').click()
+        for stock in stocks_to_buy:  # looping to buy each stock from the stocks_to_buy list
+            bot.find_element_by_tag_name('input').send_keys(stock[0])  # searching for the stock
+            time.sleep(1)  # waiting for the results to appear
+            print(bot.find_element_by_class_name('trading-autocomplete-wrapper'). \
+                  find_element_by_class_name('search-result-name-full').text)
+
         # bot.close()  # shuts down the bot
 
 
