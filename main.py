@@ -127,18 +127,32 @@ class Auto_trading_bot:
             time.sleep(1)  # waiting for the results to appear
             bot.find_element_by_class_name('trading-autocomplete-wrapper').find_element_by_class_name(
                 'search-result-name-full').click()  # clicking the right stock from the stocks section
-            time.sleep(2)
-            # finding the trade button
-            try:
-                bot.find_element_by_tag_name('trade-button').click()  # clicking the trade button
-                bot.find_element_by_tag_name('input').send_keys(stock[1])  # typing the amount of money
-                buttons = bot.find_elements_by_tag_name('button')  # finding all the buttons
-                for button in buttons:
-                    if button.text == 'Set Order                        ':
-                        button.click()  # clicking the right button
-            except:
-                pass
-            time.sleep(2)
+            time.sleep(2)  # waiting for the data to load
+            flag = True  # some times etoro makes you double click some buttons to make sure you aren't a bot
+            while flag:  # looping until we succeed
+                try:
+                    bot.find_element_by_tag_name('trade-button').click()  # clicking the trade button
+                    time.sleep(1)
+                    # ===== FIX THIS =====
+                    # THIS DOESN'T WORK
+                    # input_form = bot.find_element_by_class_name('stepper-ph')  # getting all the form
+                    # time.sleep(1)
+                    # input_form.find_element_by_tag_name('input').clear()  # clearing the inputs for some reason
+                    # time.sleep(1)
+                    # input_form.find_element_by_tag_name('input').send_keys(stock[1])  # trying to type the number
+                    # THIS DOESNT WORK EITHER
+                    # bot.find_element_by_xpath(
+                    #     '/html/body/div[6]/div[2]/div/div/div[2]/div/div[2]/div[2]/div[1]/div[2]/input').click()
+                    # bot.find_element_by_xpath(
+                    #     '/html/body/div[6]/div[2]/div/div/div[2]/div/div[2]/div[2]/div[1]/div[2]/input').clear()
+                    # bot.find_element_by_xpath(
+                    #     '/html/body/div[6]/div[2]/div/div/div[2]/div/div[2]/div[2]/div[1]/div[2]/input').send_keys(
+                    #     stock[1])
+                    # ===== FIX THIS  ======
+                    flag = False
+                except:
+                    pass
+            time.sleep(10)
         # bot.close()  # shuts down the bot
 
 
