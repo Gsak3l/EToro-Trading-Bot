@@ -10,29 +10,22 @@ stocks_to_buy = manager.list()
 flags = manager.list()
 
 
-def calculate_what_to_buy(local_stocks_to_buy, amount_of_money):
+def calculate_what_to_buy(local_stocks_to_buy):
     # waiting to retrieve the data from the get_stocks_info function
     while len(flags) == 0:
         continue
     stock_info_2 = sorted(stock_info, key=lambda x: x[3])  # sorting the array by the strength of the stock
-    # calculating how many stocks have a decent strength
-    positive_stocks = 0
-    for stock in stock_info_2:
-        if stock[3] > 0:
-            positive_stocks = + positive_stocks
-    money_step = 4
-    separator = amount_of_money / 10
-    # opposite for
-    for stock in reversed(stock_info_2):
-        # checking if the stock strength is enough, and if there are enough money
-        if stock[3] > 0 and amount_of_money > 0 and money_step >= 1:
-            # appending the array with the stock names and the amount of money to spent on them
-            local_stocks_to_buy.append([stock[0], money_step * separator])
-            amount_of_money = amount_of_money - money_step * separator
-            # removing the money from the amount_of_money
-            money_step = money_step - 1  # decreasing the value of the step
-    for i in local_stocks_to_buy:
-        print(i)
+    step = 0
+    total = 0
+    # calculating how many stocks have a positive strength
+    for stock in stock_info_2:  # opposite for
+        print(stock)
+        if stock[1] >= 1:  # counting how many stocks are positive
+            step += 1
+            total += step
+            local_stocks_to_buy.append([stock[0], step])
+    for stock in local_stocks_to_buy:
+        print(stock)
     flags.append(True)
 
 
@@ -132,24 +125,19 @@ class Auto_trading_bot:
             while flag:  # looping until we succeed
                 try:
                     bot.find_element_by_tag_name('trade-button').click()  # clicking the trade button
-                    time.sleep(1)
-                    # ===== FIX THIS =====
-                    # THIS DOESN'T WORK
-                    # input_form = bot.find_element_by_class_name('stepper-ph')  # getting all the form
-                    # time.sleep(1)
-                    # input_form.find_element_by_tag_name('input').clear()  # clearing the inputs for some reason
-                    # time.sleep(1)
-                    # input_form.find_element_by_tag_name('input').send_keys(stock[1])  # trying to type the number
-                    # THIS DOESNT WORK EITHER
-                    # bot.find_element_by_xpath(
-                    #     '/html/body/div[6]/div[2]/div/div/div[2]/div/div[2]/div[2]/div[1]/div[2]/input').click()
-                    # bot.find_element_by_xpath(
-                    #     '/html/body/div[6]/div[2]/div/div/div[2]/div/div[2]/div[2]/div[1]/div[2]/input').clear()
-                    # bot.find_element_by_xpath(
-                    #     '/html/body/div[6]/div[2]/div/div/div[2]/div/div[2]/div[2]/div[1]/div[2]/input').send_keys(
-                    #     stock[1])
-                    # ===== FIX THIS  ======
+                    time.sleep(2)
+                    # FIX THIS
+                    print('so far so good')
+                    bot.find_element_by_xpath(
+                        '/html/body/div[3]/div[2]/div/div/div[2]/div/div[2]/div[2]/div[1]/div[2]/input').send_keys('')
+                    time.sleep(2)
+                    print('over here')
+                    bot.find_element_by_xpath(
+                        '/html/body/div[3]/div[2]/div/div/div[2]/div/div[2]/div[2]/div[1]/div[2]/input').send_keys(
+                        stock[1])
+                    print('done')
                     flag = False
+                    # TILL HERE
                 except:
                     pass
             time.sleep(10)
@@ -160,7 +148,7 @@ if __name__ == '__main__':
     bot1 = Auto_trading_bot()
     bot2 = Auto_trading_bot()
     process1 = multiprocessing.Process(target=bot1.get_stock_info, args=(stock_info,))
-    process2 = multiprocessing.Process(target=calculate_what_to_buy, args=(stocks_to_buy, 1500))
+    process2 = multiprocessing.Process(target=calculate_what_to_buy, args=(stocks_to_buy,))
     process3 = multiprocessing.Process(target=bot2.buy_stocks, args=("email address goes here", "password goes here"))
     process1.start()
     process2.start()
