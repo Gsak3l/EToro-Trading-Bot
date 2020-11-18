@@ -112,7 +112,7 @@ class Auto_trading_bot:
         # clicking the final warning button
         bot.find_element_by_xpath(
             '/html/body/div[5]/div[2]/div/et-dialog-container/et-portfolio-toggle-account/div/div[3]/a').click()
-        for stock in stocks_to_buy:  # looping to buy each stock from the stocks_to_buy list
+        for stock in reversed(stocks_to_buy):  # looping to buy each stock from the stocks_to_buy list
             bot.find_element_by_tag_name('input').send_keys(stock[0])  # searching for the stock
             time.sleep(1)  # waiting for the results to appear
             bot.find_element_by_class_name('trading-autocomplete-wrapper').find_element_by_class_name(
@@ -120,6 +120,25 @@ class Auto_trading_bot:
             time.sleep(2)  # waiting for the data to load
             flag = True  # some times etoro makes you double click some buttons to make sure you aren't a bot
             bot.find_element_by_tag_name('trade-button').click()  # clicking the trade button
+            time.sleep(2)
+            try:  # doing different things for the stock strength
+                if stock[1] > 20:
+                    for i in range(2):
+                        bot.find_element_by_class_name('stepper-plus').click()  # clicking plus twice
+                        time.sleep(1)
+                elif stock[1] > 10:
+                    bot.find_element_by_class_name('stepper-plus').click()  # clicking plus once
+                elif stock[1] > 5:
+                    bot.find_element_by_class_name('stepper-minus').click()  # clicking the minus once
+                else:
+                    for i in range(2):
+                        bot.find_element_by_class_name('stepper-minus').click()  # clicking the minus twice
+                        time.sleep(1)
+                time.sleep(2)
+            except:
+                pass
+            # clicking the final trade button
+            bot.find_element_by_xpath('/html/body/div[6]/div[2]/div/div/div[2]/div/div[4]/div/button').click()
             time.sleep(2)
             # bot.close()  # shuts down the bot
 
