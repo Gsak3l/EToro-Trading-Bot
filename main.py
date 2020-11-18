@@ -19,14 +19,11 @@ def calculate_what_to_buy(local_stocks_to_buy):
     total = 0
     # calculating how many stocks have a positive strength
     for stock in stock_info_2:  # opposite for
-        print(stock)
         if stock[1] >= 1:  # counting how many stocks are positive
-            step += 1
-            total += step
+            step += 1  # not sure what I am doing here
+            total += step  # it's my own idea, I swear
             local_stocks_to_buy.append([stock[0], step])
-    for stock in local_stocks_to_buy:
-        print(stock)
-    flags.append(True)
+    flags.append(total)
 
 
 # noinspection PyBroadException
@@ -92,7 +89,7 @@ class Auto_trading_bot:
         # waiting 30 seconds after we get all the data
         while len(flags) != 1:
             continue
-        time.sleep(20)  # you are supposed to somehow change your ip now
+        time.sleep(30)  # you are supposed to somehow change your ip now
         # clicking the sign in button again
         bot.find_element_by_xpath('//button[@automation-id="login-sts-btn-sign-in"]').click()
         # waiting to get the calculated values from calculate_what_to_buy
@@ -122,26 +119,9 @@ class Auto_trading_bot:
                 'search-result-name-full').click()  # clicking the right stock from the stocks section
             time.sleep(2)  # waiting for the data to load
             flag = True  # some times etoro makes you double click some buttons to make sure you aren't a bot
-            while flag:  # looping until we succeed
-                try:
-                    bot.find_element_by_tag_name('trade-button').click()  # clicking the trade button
-                    time.sleep(2)
-                    # FIX THIS
-                    print('so far so good')
-                    bot.find_element_by_xpath(
-                        '/html/body/div[3]/div[2]/div/div/div[2]/div/div[2]/div[2]/div[1]/div[2]/input').send_keys('')
-                    time.sleep(2)
-                    print('over here')
-                    bot.find_element_by_xpath(
-                        '/html/body/div[3]/div[2]/div/div/div[2]/div/div[2]/div[2]/div[1]/div[2]/input').send_keys(
-                        stock[1])
-                    print('done')
-                    flag = False
-                    # TILL HERE
-                except:
-                    pass
-            time.sleep(10)
-        # bot.close()  # shuts down the bot
+            bot.find_element_by_tag_name('trade-button').click()  # clicking the trade button
+            time.sleep(2)
+            # bot.close()  # shuts down the bot
 
 
 if __name__ == '__main__':
