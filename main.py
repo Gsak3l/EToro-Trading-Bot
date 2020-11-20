@@ -100,6 +100,7 @@ class Auto_trading_bot:
             continue
         # waiting for the page to load
         time.sleep(5)
+
         # locating the virtual portfolio button, change this if you want to invest in your actual portfolio
         # !!! not recommended, I don't know anything about stocks !!!
         bot.find_element_by_tag_name('et-select').click()  # clicking the "REAL" portfolio button to switch to virtual
@@ -115,6 +116,22 @@ class Auto_trading_bot:
         # clicking the final warning button
         bot.find_element_by_xpath(
             '/html/body/div[5]/div[2]/div/et-dialog-container/et-portfolio-toggle-account/div/div[3]/a').click()
+        time.sleep(2)
+        # THIS CLOSES ALL THE STOCKS WE HAVE SO FAR
+        # clicking the portfolio button
+        bot.find_element_by_xpath(
+            '/html/body/ui-layout/div/div/div[1]/et-layout-menu/div/div[2]/div[1]/a[2]/span').click()
+        time.sleep(2)
+        # getting all the stocks we already have bought
+        active_stocks = bot.find_elements_by_class_name('table-static-cell-info')
+        active_stock_names = []
+        for stock in active_stocks:
+            active_stock_names.append(stock.find_element_by_tag_name('div').text)
+            print(stock.find_element_by_tag_name('div').text)
+        buttons = bot.find_elements_by_class_name('ui-table-button-cell')  # locating all the buttons by class
+        #  for button in buttons:  # looping in all of them to close all the stocks
+
+        # THIS BUYS STOCKS
         for stock in reversed(stocks_to_buy):  # looping to buy each stock from the stocks_to_buy list
             bot.find_element_by_tag_name('input').send_keys(stock[0])  # searching for the stock
             time.sleep(1)  # waiting for the results to appear
