@@ -143,17 +143,17 @@ class Auto_trading_bot:
             time.sleep(2)
             bot.find_element_by_class_name('close-all-positions-button-wrapper').find_element_by_tag_name(
                 'button').click()
-            break  # breaking just because I don't want to close all the open stocks I have
-
-        # THIS BUYS STOCKS
         for stock in reversed(stocks_to_buy):  # looping to buy each stock from the stocks_to_buy list
-            bot.find_element_by_tag_name('input').send_keys(stock[0])  # searching for the stock
-            time.sleep(1)  # waiting for the results to appear
-            bot.find_element_by_class_name('trading-autocomplete-wrapper').find_element_by_class_name(
-                'search-result-name-full').click()  # clicking the right stock from the stocks section
-            time.sleep(2)  # waiting for the data to load
-            flag = True  # some times etoro makes you double click some buttons to make sure you aren't a bot
-            bot.find_element_by_tag_name('trade-button').click()  # clicking the trade button
+            bot.find_element_by_tag_name('input').send_keys('')  # clearing the input
+            try:
+                bot.find_element_by_tag_name('input').send_keys(stock[0])  # searching for the stock
+                time.sleep(1)  # waiting for the results to appear
+                bot.find_element_by_class_name('trading-autocomplete-wrapper').find_element_by_class_name(
+                    'search-result-name-full').click()  # clicking the right stock from the stocks section
+                time.sleep(2)  # waiting for the data to load
+                bot.find_element_by_tag_name('trade-button').click()  # clicking the trade button
+            except:
+                pass
             time.sleep(2)
             try:  # doing different things for the stock strength
                 if stock[1] > 20:
