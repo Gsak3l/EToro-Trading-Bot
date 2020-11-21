@@ -127,9 +127,23 @@ class Auto_trading_bot:
         active_stock_names = []
         for stock in active_stocks:
             active_stock_names.append(stock.find_element_by_tag_name('div').text)
-            print(stock.find_element_by_tag_name('div').text)
-        buttons = bot.find_elements_by_class_name('ui-table-button-cell')  # locating all the buttons by class
-        #  for button in buttons:  # looping in all of them to close all the stocks
+        buttons = bot.find_elements_by_tag_name('ui-table-button-cell')  # locating all the buttons by class
+        for button in buttons:  # clicking all the buttons to make the options appear
+            button.click()
+            dropdown = button.find_element_by_class_name('drop-select-box')  # getting the dropdown box
+            dropdown_options = dropdown.find_elements_by_tag_name('div')  # getting all the options
+            for opt in dropdown_options:  # looping through all options
+                if opt.text == 'Close':  # clicking the right one
+                    opt.click()
+            # clicking the label that enables the button
+            time.sleep(2)
+            bot.find_element_by_xpath(
+                '/html/body/div[6]/div[2]/close-all-positions/div/div[3]/div[3]/div[1]/div/label').click()
+            # clicking the button to close the stock
+            time.sleep(2)
+            bot.find_element_by_class_name('close-all-positions-button-wrapper').find_element_by_tag_name(
+                'button').click()
+            break  # breaking just because I don't want to close all the open stocks I have
 
         # THIS BUYS STOCKS
         for stock in reversed(stocks_to_buy):  # looping to buy each stock from the stocks_to_buy list
