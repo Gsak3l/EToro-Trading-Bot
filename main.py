@@ -100,7 +100,6 @@ class Auto_trading_bot:
             continue
         # waiting for the page to load
         time.sleep(5)
-
         # locating the virtual portfolio button, change this if you want to invest in your actual portfolio
         # !!! not recommended, I don't know anything about stocks !!!
         bot.find_element_by_tag_name('et-select').click()  # clicking the "REAL" portfolio button to switch to virtual
@@ -136,26 +135,23 @@ class Auto_trading_bot:
                 if opt.text == 'Close':  # clicking the right one
                     opt.click()
             # clicking the label that enables the button
-            time.sleep(2)
+            time.sleep(1)
             bot.find_element_by_xpath(
                 '/html/body/div[6]/div[2]/close-all-positions/div/div[3]/div[3]/div[1]/div/label').click()
             # clicking the button to close the stock
-            time.sleep(2)
+            time.sleep(1)
             bot.find_element_by_class_name('close-all-positions-button-wrapper').find_element_by_tag_name(
                 'button').click()
         for stock in reversed(stocks_to_buy):  # looping to buy each stock from the stocks_to_buy list
-            bot.find_element_by_tag_name('input').send_keys('')  # clearing the input
+            bot.find_element_by_tag_name('input').clear()  # clearing the input
+            bot.find_element_by_tag_name('input').send_keys(stock[0])  # searching for the stock
+            time.sleep(1)  # waiting for the results to appear
             try:
-                bot.find_element_by_tag_name('input').send_keys(stock[0])  # searching for the stock
-                time.sleep(1)  # waiting for the results to appear
                 bot.find_element_by_class_name('trading-autocomplete-wrapper').find_element_by_class_name(
                     'search-result-name-full').click()  # clicking the right stock from the stocks section
-                time.sleep(2)  # waiting for the data to load
+                time.sleep(1)  # waiting for the data to load
                 bot.find_element_by_tag_name('trade-button').click()  # clicking the trade button
-            except:
-                pass
-            time.sleep(2)
-            try:  # doing different things for the stock strength
+                time.sleep(1)
                 if stock[1] > 20:
                     for i in range(2):
                         bot.find_element_by_class_name('stepper-plus').click()  # clicking plus twice
@@ -168,11 +164,11 @@ class Auto_trading_bot:
                     for i in range(2):
                         bot.find_element_by_class_name('stepper-minus').click()  # clicking the minus twice
                         time.sleep(1)
-                time.sleep(2)
+                time.sleep(1)
+                # clicking the final trade button
+                bot.find_element_by_xpath('/html/body/div[6]/div[2]/div/div/div[2]/div/div[4]/div/button').click()
             except:
                 pass
-            # clicking the final trade button
-            bot.find_element_by_xpath('/html/body/div[6]/div[2]/div/div/div[2]/div/div[4]/div/button').click()
             time.sleep(2)
             # bot.close()  # shuts down the bot
 
