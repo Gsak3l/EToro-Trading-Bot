@@ -49,10 +49,10 @@ class Auto_trading_bot:
                 break  # breaking the loop (or the if, I am not sure)
         # clicking twice the % change on the stocks table
         for i in range(2):
-            time.sleep(3)  # waiting for the table content to load
+            time.sleep(2)  # waiting for the table content to load
             bot.find_element_by_xpath('/html/body/div[1]/div/div/div[1]/div/div[2]/div/div/div[6]/div/div/section/div/'
                                       'div[2]/div[1]/table/thead/tr/th[5]').click()
-        time.sleep(5)
+        time.sleep(2)
         # getting the entire table
         table = bot.find_element_by_tag_name('tbody')
         # getting all the rows
@@ -153,24 +153,26 @@ class Auto_trading_bot:
                 bot.find_element_by_tag_name('trade-button').click()  # clicking the trade button
                 time.sleep(1)
                 if stock[1] > 20:
+                    for i in range(4):
+                        bot.find_element_by_class_name('stepper-plus').click()  # clicking plus, four times
+                        time.sleep(0.5)
+                elif stock[1] > 10:
                     for i in range(2):
                         bot.find_element_by_class_name('stepper-plus').click()  # clicking plus twice
-                        time.sleep(1)
-                elif stock[1] > 10:
-                    bot.find_element_by_class_name('stepper-plus').click()  # clicking plus once
+                        time.sleep(0.5)
                 elif stock[1] > 5:
                     bot.find_element_by_class_name('stepper-minus').click()  # clicking the minus once
                 else:
                     for i in range(2):
                         bot.find_element_by_class_name('stepper-minus').click()  # clicking the minus twice
-                        time.sleep(1)
+                        time.sleep(0.5)
                 time.sleep(1)
                 # clicking the final trade button
                 bot.find_element_by_xpath('/html/body/div[6]/div[2]/div/div/div[2]/div/div[4]/div/button').click()
             except:
                 pass
             time.sleep(2)
-            # bot.close()  # shuts down the bot
+            bot.close()  # shuts down the bot
 
 
 if __name__ == '__main__':
@@ -178,7 +180,8 @@ if __name__ == '__main__':
     bot2 = Auto_trading_bot()
     process1 = multiprocessing.Process(target=bot1.get_stock_info, args=(stock_info,))
     process2 = multiprocessing.Process(target=calculate_what_to_buy, args=(stocks_to_buy,))
-    process3 = multiprocessing.Process(target=bot2.buy_stocks, args=("email address goes here", "password goes here"))
+    process3 = multiprocessing.Process(target=bot2.buy_stocks, args=("telmusurko@nedoz.com", "7Bp8HMc^rqbE"))
+    # process3 = multiprocessing.Process(target=bot2.buy_stocks, args=("email address goes here", "password goes here"))
     process1.start()
     process2.start()
     process3.start()
