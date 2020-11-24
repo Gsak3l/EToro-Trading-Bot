@@ -123,19 +123,22 @@ class Auto_trading_bot:
         time.sleep(2)
         # getting all the stocks we already have bought
         active_stocks = bot.find_elements_by_class_name('table-static-cell-info')
-        # DO SOMETHING WITH THAT
+        # ~~~~~~~~~~~~~~~~~~~~ DO SOMETHING WITH THAT ~~~~~~~~~~~~~~~~~~~~
         active_stock_names = []
         for stock in active_stocks:
             active_stock_names.append(stock.find_element_by_tag_name('div').text)
-        # DO SOMETHING WITH THAT
+        # ~~~~~~~~~~~~~~~~~~~~ DO SOMETHING WITH THAT ~~~~~~~~~~~~~~~~~~~~
         buttons = bot.find_elements_by_tag_name('ui-table-button-cell')  # locating all the buttons by class
         for button in buttons:  # clicking all the buttons to make the options appear
             button.click()
             dropdown = button.find_element_by_class_name('drop-select-box')  # getting the dropdown box
             dropdown_options = dropdown.find_elements_by_tag_name('div')  # getting all the options
             for opt in dropdown_options:  # looping through all options
-                if opt.text == 'Close':  # clicking the right one
-                    opt.click()
+                try:  # some times it refuses to click if there are a lot of stocks because some stocks are hidden
+                    if opt.text == 'Close':  # clicking the right one
+                        opt.click()
+                except:
+                    pass
             # clicking the label that enables the button
             time.sleep(1)
             bot.find_element_by_xpath(
@@ -144,7 +147,6 @@ class Auto_trading_bot:
             time.sleep(1)
             bot.find_element_by_class_name('close-all-positions-button-wrapper').find_element_by_tag_name(
                 'button').click()
-        print(reversed(stocks_to_buy))
         for stock in reversed(stocks_to_buy):  # looping to buy each stock from the stocks_to_buy list
             bot.find_element_by_tag_name('input').clear()  # clearing the input
             bot.find_element_by_tag_name('input').send_keys(stock[0])  # searching for the stock
