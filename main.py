@@ -36,7 +36,7 @@ class Auto_trading_bot:
                           "Chrome/86.0.4240.183 Safari/537.36")
         self.bot = webdriver.Chrome(executable_path='./chromedriver', options=opts)
 
-    def close_open_stocks(self):
+    def close_open_stocks(self):  # the basioc stuff
         bot = self.bot
 
     def get_stock_info(self, local_stock_info):
