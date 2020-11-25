@@ -25,4 +25,4 @@ python3 main.py
 I have no idea how stocks work, so please do not use this for your actual portfolio!
 
 ## License
-[MIT](https://choosealicense.com/licenses/mit/)
+Licensed under the [MIT License](LICENSE).
