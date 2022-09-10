@@ -54,8 +54,37 @@ class EToroBot:
         time.sleep(self.page_load_timeout)
         return driver
 
-    def buy_stock(self, driver, stocks):
-        pass
+    def search_stock(self, driver, stocks):
+        all_inputs = driver.find_elements(By.TAG_NAME, 'input')
+        for inp in all_inputs:
+            if inp.get_attribute('placeholder') == 'Search':
+                inp.send_keys('AAPL')
+                break
+        time.sleep(self.trading_timeout)
+
+        driver.find_element(By.TAG_NAME, 'trade-button').click()
+        time.sleep(self.trading_timeout)
+
+        popup = driver.find_element(By.XPATH, '//*[@id="open-position-view"]')
+
+        # clicking input field and writing amount
+        amount = popup.find_element(By.TAG_NAME, 'input')
+        amount.click()
+        # simulating ctrl+a and backslash, clear() doesn't seem to work
+        amount.send_keys(Keys.CONTROL + "a")
+        amount.send_keys(Keys.BACKSPACE)
+        amount.send_keys('100')
+
+        # clicking set order button
+        buttons = popup.find_elements(By.TAG_NAME, 'button')
+        for button in buttons:
+            if button.text == 'Set Order':
+                button.click()  # focusing outside the input box
+                time.sleep(self.trading_timeout)
+                button.click()  # buying the stock
+                break
+
+        return driver
 
 
 def initialize_driver_options():
@@ -86,7 +115,7 @@ if __name__ == '__main__':
     webdriver = Chrome(options=initialize_driver_options())
     webdriver = e_toro_bot.login(webdriver)
     webdriver = e_toro_bot.switch_to_virtual(webdriver)
-    webdriver = e_toro_bot.switch_to_real(webdriver)
+    # webdriver = e_toro_bot.switch_to_real(webdriver)
 
     stocks_to_buy = {
         'AAPL': 100,
@@ -95,4 +124,4 @@ if __name__ == '__main__':
         'MSFT': 210,
     }
 
-    webdriver = e_toro_bot.switch_to_virtual(webdriver, )
+    webdriver = e_toro_bot.search_stock(webdriver, stocks_to_buy)
