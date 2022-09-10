@@ -54,17 +54,29 @@ class EToroBot:
         time.sleep(self.page_load_timeout)
         return driver
 
+    # just searches for the stock in the input and then calls buy_stock() to buy the stock
     def search_stock(self, driver, stocks):
-        all_inputs = driver.find_elements(By.TAG_NAME, 'input')
-        for inp in all_inputs:
-            if inp.get_attribute('placeholder') == 'Search':
-                inp.send_keys('AAPL')
-                break
-        time.sleep(self.trading_timeout)
+        # looping through the stocks, key is the stock and value is the amount
+        for key, value in stocks.items():
 
-        driver.find_element(By.TAG_NAME, 'trade-button').click()
-        time.sleep(self.trading_timeout)
+            # searching for the input field to search for the stock
+            all_inputs = driver.find_elements(By.TAG_NAME, 'input')
+            for inp in all_inputs:
+                if inp.get_attribute('placeholder') == 'Search':
+                    inp.send_keys(key)
+                    break
+            time.sleep(self.trading_timeout)
 
+            # clicking the Trade button
+            driver.find_element(By.TAG_NAME, 'trade-button').click()
+            time.sleep(self.trading_timeout)
+
+            driver = self.buy_stock(driver, value)  # stock already selected
+            time.sleep(self.trading_timeout)
+
+        return driver
+
+    def buy_stock(self, driver, value):
         popup = driver.find_element(By.XPATH, '//*[@id="open-position-view"]')
 
         # clicking input field and writing amount
@@ -73,7 +85,7 @@ class EToroBot:
         # simulating ctrl+a and backslash, clear() doesn't seem to work
         amount.send_keys(Keys.CONTROL + "a")
         amount.send_keys(Keys.BACKSPACE)
-        amount.send_keys('100')
+        amount.send_keys(value)
 
         # clicking set order button
         buttons = popup.find_elements(By.TAG_NAME, 'button')
