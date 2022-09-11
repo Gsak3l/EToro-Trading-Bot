@@ -4,6 +4,7 @@ import pandas as pd
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import ElementClickInterceptedException
 
 
 class EToroBot:
@@ -63,16 +64,20 @@ class EToroBot:
             all_inputs = driver.find_elements(By.TAG_NAME, 'input')
             for inp in all_inputs:
                 if inp.get_attribute('placeholder') == 'Search':
+                    inp.clear()
                     inp.send_keys(key)
                     break
             time.sleep(self.trading_timeout)
 
             # clicking the Trade button
-            driver.find_element(By.TAG_NAME, 'trade-button').click()
-            time.sleep(self.trading_timeout)
+            try:  # in case stock does not exist on e-Toro
+                driver.find_element(By.TAG_NAME, 'trade-button').click()
+                time.sleep(self.trading_timeout)
 
-            driver = self.buy_stock(driver, value)  # stock already selected
-            time.sleep(self.trading_timeout)
+                driver = self.buy_stock(driver, value)  # stock already selected
+                time.sleep(self.trading_timeout)
+            except ElementClickInterceptedException as e:
+                print(f'Could not find {key} on e-Toro')
 
         return driver
 
@@ -142,16 +147,44 @@ def initialize_driver_options():
     return options
 
 
-def calculate_stocks(df_stocks):
-    # calculating the amount of stocks to buy
+def value_to_float(x):
+    if type(x) == float or type(x) == int:
+        return x
+    if 'K' in x:
+        if len(x) > 1:
+            return float(x.replace('K', '')) * 1000
+        return 1000.0
+    if 'M' in x:
+        if len(x) > 1:
+            return float(x.replace('M', '')) * 1000000
+        return 1000000.0
+    if 'B' in x:
+        return float(x.replace('B', '')) * 1000000000
+    return 0.0
+
+
+# don't know what I am doing here
+def calculate_stocks(df_stocks, account_balance, max_stocks):
+    df_stocks['Volume'] = df_stocks['Volume'].apply(value_to_float)
+    df_stocks['Avg Vol (3m)'] = df_stocks['Avg Vol (3m)'].apply(value_to_float)
+    # calculating the strength of the stock I guess.
+    df_stocks['Volume Strength'] = df_stocks['Volume'] / df_stocks['Avg Vol (3m)']
+    df_stocks['Volume Strength'] = df_stocks['Volume Strength'].apply(lambda x: int(x))
+    # sort by amount
+    df_stocks = df_stocks.sort_values(by=['Volume Strength'], ascending=False)
+    # calculating how much of account balance to invest in each stock
+    df_stocks = df_stocks.head(max_stocks)
+    # sum of volume strength
+    df_stocks['Buy'] = df['Volume Strength'] * account_balance / df_stocks['Volume Strength'].sum()
+    df_stocks['Buy'] = df_stocks['Buy'].apply(lambda x: int(x))
+
     stocks = {}
     for index, row in df_stocks.iterrows():
         if row['%Change'] == '-':  # if the stock is down, skip it
             continue
-
-        # calculating the amount of stocks to buy
-        amount = int(float(row['Volume'].replace(',', '')) / float(row['Avg Vol (3m)'].replace(',', '')))
-        stocks[row['Symbol']] = amount
+        else:
+            # calculating the amount of stocks to buy
+            stocks[row['Symbol']] = row['Buy']
 
     return stocks
 
@@ -162,13 +195,14 @@ if __name__ == '__main__':
     yahoo_bot = YahooFinance()
     webdriver = yahoo_bot.bypass_authentication(webdriver)
     df, webdriver = yahoo_bot.get_most_active(webdriver)
-    stocks_to_buy = calculate_stocks(df)
+
+    stocks_to_buy = calculate_stocks(df, account_balance=100000, max_stocks=17)
 
     # adjust page load timeout and trading timeout according to your internet connection, vpn, ping
     e_toro_bot = EToroBot(
-        account_name='',
-        account_email='',
-        account_password='',
+        account_name='Your e-Toro account name',
+        account_email='Your e-Toro account email',
+        account_password='Your e-Toro account password',
         page_load_timeout=5,
         trading_timeout=2
     )
@@ -176,6 +210,5 @@ if __name__ == '__main__':
     webdriver = e_toro_bot.login(webdriver)
     webdriver = e_toro_bot.switch_to_virtual(webdriver)
     # webdriver = e_toro_bot.switch_to_real(webdriver)
-
 
     webdriver = e_toro_bot.search_stock(webdriver, stocks_to_buy)
