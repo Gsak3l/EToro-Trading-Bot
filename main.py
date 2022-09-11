@@ -1,4 +1,4 @@
-import time
+from time import sleep
 
 import pandas as pd
 from selenium.webdriver import Chrome, ChromeOptions
@@ -36,23 +36,23 @@ class EToroBot:
                 button.click()
                 break
 
-        time.sleep(self.page_load_timeout)
+        sleep(self.page_load_timeout)
         return driver
 
     # function that allows you to switch to virtual portfolio
     def switch_to_virtual(self, driver):
         driver.find_element(By.LINK_TEXT, 'Switch to Virtual').click()
-        time.sleep(self.trading_timeout)
+        sleep(self.trading_timeout)
         driver.find_element(By.LINK_TEXT, 'Switch to Virtual Portfolio').click()
-        time.sleep(self.page_load_timeout)
+        sleep(self.page_load_timeout)
         return driver
 
     # function that allows you to switch to real portfolio
     def switch_to_real(self, driver):
         driver.find_element(By.LINK_TEXT, 'Switch to Real').click()
-        time.sleep(self.trading_timeout)
+        sleep(self.trading_timeout)
         driver.find_element(By.LINK_TEXT, 'Go to Real Portfolio').click()
-        time.sleep(self.page_load_timeout)
+        sleep(self.page_load_timeout)
         return driver
 
     # just searches for the stock in the input and then calls buy_stock() to buy the stock
@@ -67,15 +67,15 @@ class EToroBot:
                     inp.clear()
                     inp.send_keys(key)
                     break
-            time.sleep(self.trading_timeout)
+            sleep(self.trading_timeout)
 
             # clicking the Trade button
             try:  # in case stock does not exist on e-Toro
                 driver.find_element(By.TAG_NAME, 'trade-button').click()
-                time.sleep(self.trading_timeout)
+                sleep(self.trading_timeout)
 
                 driver = self.buy_stock(driver, value)  # stock already selected
-                time.sleep(self.trading_timeout)
+                sleep(self.trading_timeout)
             except ElementClickInterceptedException as e:
                 print(f'Could not find {key} on e-Toro')
 
@@ -97,7 +97,7 @@ class EToroBot:
         for button in buttons:
             if button.text == 'Set Order':
                 button.click()  # focusing outside the input box
-                time.sleep(self.trading_timeout)
+                sleep(self.trading_timeout)
                 button.click()  # buying the stock
                 break
 
