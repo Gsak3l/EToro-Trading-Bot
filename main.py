@@ -1,9 +1,9 @@
 import time
 
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
+import pandas as pd
 from selenium.webdriver import Chrome, ChromeOptions
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
 
 class EToroBot:
@@ -99,6 +99,34 @@ class EToroBot:
         return driver
 
 
+class YahooFinance:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def bypass_authentication(driver):
+        driver.get("https://finance.yahoo.com/most-active?offset=0&count=100")  # 100 most active
+        # multi-language, otherwise by text works just fine
+        driver.find_element(By.CLASS_NAME, 'btn.primary').click()
+        return driver
+
+    @staticmethod
+    def get_most_active(driver):
+        stocks = driver.find_elements(By.TAG_NAME, 'tr')  # all the stocks in the table
+        df_stocks = pd.DataFrame(columns=[
+            'Symbol', 'Name', 'Price', 'Change', '%Change', 'Volume', 'Avg Vol (3m)', 'Market Cap', 'PE Ratio (TTM)']
+        )
+
+        for stock in stocks[1:]:  # skipping the first one, it's the header
+            tds = stock.find_elements(By.TAG_NAME, 'td')
+            df_stocks.loc[len(df_stocks.index)] = [
+                tds[0].text, tds[1].text, tds[2].text, tds[3].text, tds[4].text,
+                tds[5].text, tds[6].text, tds[7].text, tds[8].text
+            ]
+
+        return df_stocks, driver
+
+
 def initialize_driver_options():
     options = ChromeOptions()
 
@@ -114,7 +142,28 @@ def initialize_driver_options():
     return options
 
 
+def calculate_stocks(df_stocks):
+    # calculating the amount of stocks to buy
+    stocks = {}
+    for index, row in df_stocks.iterrows():
+        if row['%Change'] == '-':  # if the stock is down, skip it
+            continue
+
+        # calculating the amount of stocks to buy
+        amount = int(float(row['Volume'].replace(',', '')) / float(row['Avg Vol (3m)'].replace(',', '')))
+        stocks[row['Symbol']] = amount
+
+    return stocks
+
+
 if __name__ == '__main__':
+    webdriver = Chrome(options=initialize_driver_options())
+
+    yahoo_bot = YahooFinance()
+    webdriver = yahoo_bot.bypass_authentication(webdriver)
+    df, webdriver = yahoo_bot.get_most_active(webdriver)
+    stocks_to_buy = calculate_stocks(df)
+
     # adjust page load timeout and trading timeout according to your internet connection, vpn, ping
     e_toro_bot = EToroBot(
         account_name='',
@@ -124,16 +173,9 @@ if __name__ == '__main__':
         trading_timeout=2
     )
 
-    webdriver = Chrome(options=initialize_driver_options())
     webdriver = e_toro_bot.login(webdriver)
     webdriver = e_toro_bot.switch_to_virtual(webdriver)
     # webdriver = e_toro_bot.switch_to_real(webdriver)
 
-    stocks_to_buy = {
-        'AAPL': 100,
-        'AMZN': 200,
-        'GOOG': 200,
-        'MSFT': 210,
-    }
 
     webdriver = e_toro_bot.search_stock(webdriver, stocks_to_buy)
